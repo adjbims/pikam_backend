@@ -1,0 +1,38 @@
+const router = require("express").Router();
+const r_auth = require("./r_auth");
+const r_levels = require("./r_levels");
+const r_modules = require('./r_modules');
+const r_permissions = require('./r_permissions');
+const r_access = require('./r_access');
+const r_announcement = require('./r_announcement');
+const r_user = require('./r_user');
+const r_menu = require('./r_menu');
+const r_room = require('./r_room');
+const r_table = require('./r_table');
+const r_chair = require('./r_chair');
+const r_typemenu = require('./r_typemenu');
+const r_customer = require('./r_customer');
+const r_transaction = require('./r_transaction');
+const r_typepayment = require('./r_typepayment');
+const r_media = require('./r_media');
+const r_packagemenu = require('./r_packagemenu');
+
+router.use("/api/v1", r_auth);
+router.use("/api/v1", r_levels);
+router.use('/api/v1', r_modules);
+router.use('/api/v1', r_permissions);
+router.use('/api/v1', r_access);
+router.use('/api/v1', r_user);
+router.use('/api/v1', r_menu);
+router.use('/api/v1', r_room);
+router.use('/api/v1', r_table);
+router.use('/api/v1', r_chair);
+router.use('/api/v1', r_typemenu);
+router.use('/api/v1', r_announcement);
+router.use('/api/v1', r_customer);
+router.use('/api/v1', r_transaction);
+router.use('/api/v1', r_typepayment);
+router.use('/api/v1', r_media);
+router.use('/api/v1', r_packagemenu);
+
+module.exports = router;
