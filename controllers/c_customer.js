@@ -328,6 +328,67 @@ const delete_customer = async (req, res) => {
     }
 }
 
+const jwt = require('jsonwebtoken'); // Pastikan untuk menginstall jsonwebtoken
+
+const get_username_customer = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1]; // Mengambil token dari header Authorization
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token tidak ditemukan.',
+        data: null
+      });
+    }
+
+    // Dekode token untuk mendapatkan customer_uuid
+    const decoded = jwt.verify(token, 'YOUR_SECRET_KEY'); // Ganti 'YOUR_SECRET_KEY' dengan kunci rahasia yang sesuai
+    const customer_uuid = decoded.customer_uuid; // Ambil UUID dari payload token
+
+    if (!customer_uuid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Pengguna tidak terautentikasi.',
+        data: null
+      });
+    }
+
+    // Mengambil data pengguna berdasarkan UUID
+    const customer = await tbl_customer.findOne({
+      where: {
+        customer_uuid: customer_uuid,
+        customer_delete_at: null
+      },
+      attributes: ['customer_username'] // Hanya mengambil username
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gagal Mendapatkan Data Pengguna',
+        data: null
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Berhasil Mendapatkan Username',
+      data: {
+        customer_username: customer.customer_username
+      }
+    });
+  } catch (error) {
+    console.log(error, 'Data Error');
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      data: null
+    });
+  }
+};
+
+
 const get_detail_customer = async (req, res) => {
   try {
       const customer_uuid = req.userUuid; // Retrieve the logged-in user's UUID from the request object
@@ -684,4 +745,5 @@ module.exports = {
     get_all_customer,
     get_uniqe_customer,
     get_count_customer,
+    get_username_customer,
 }

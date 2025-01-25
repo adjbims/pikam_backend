@@ -11,6 +11,8 @@ const {
     get_all_customer,
     get_uniqe_customer,
     get_count_customer,
+    get_username_customer,
+
 } = require('../controllers/c_customer');
 
 // Routes for customer management
@@ -21,5 +23,5 @@ router.get('/customer/unique',  get_uniqe_customer);
 router.get('/customer/count',  get_count_customer);
 router.put('/customers', authenticate, cekAccessControl, put_customer);
 router.get('/customer/detail', authenticate, cekAccessControl, get_detail_customer);
-
+router.get('/user/username', authenticate, get_username_customer);
 module.exports = router;

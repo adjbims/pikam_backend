@@ -358,22 +358,35 @@ const getPersonalData = async (req, res) => {
 
 const registrasi_customer = async (req, res) => {
   try {
-    const { error, value } = customerSchema.validate(req.body);
-    if (error) {
+    const { customer_username, customer_full_name, customer_email, customer_password } = req.body;
+
+    // Validasi data (contoh untuk email dan password)
+    if (!customer_username || !customer_full_name || !customer_email || !customer_password) {
       return res.status(400).json({
         success: false,
-        message: error.details[0].message,
+        message: "Semua field harus diisi.",
         data: null,
       });
     }
 
-    const {
-      customer_username,
-      customer_full_name,
-      customer_email,
-      customer_password,
-    } = value;
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(customer_email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Format email tidak valid.",
+        data: null,
+      });
+    }
 
+    if (customer_password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password harus minimal 6 karakter.",
+        data: null,
+      });
+    }
+
+    // Cek email sudah digunakan
     const existingCustomer = await tbl_customer.findOne({
       where: {
         [Op.and]: [
@@ -387,14 +400,16 @@ const registrasi_customer = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Email sudah digunakan, silakan gunakan email lain.",
-        data: existingCustomer,
+        data: null,
       });
     }
 
     const customer_uuid = uuidv4();
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(customer_password, saltRounds);
 
+    // Cari level "customer"
     const level = await tbl_levels.findOne({
       where: { level_name: "customer" },
     });
@@ -402,13 +417,14 @@ const registrasi_customer = async (req, res) => {
     if (!level) {
       return res.status(404).json({
         success: false,
-        message: "Level customer tidak ditemukan",
+        message: "Level customer tidak ditemukan.",
         data: null,
       });
     }
 
     const customerLevelUuid = level.level_uuid;
 
+    // Buat data customer
     const create_customer = await tbl_customer.create({
       customer_uuid: customer_uuid,
       customer_username: customer_username,
@@ -419,41 +435,41 @@ const registrasi_customer = async (req, res) => {
     });
 
     if (!create_customer) {
-      return res.status(404).json({
+      return res.status(500).json({
         success: false,
-        message: "Gagal menambahkan data pelanggan",
+        message: "Gagal menambahkan data pelanggan.",
         data: null,
       });
     }
 
+    // Tambahkan media
     const create_media = await tbl_media.create({
       media_uuid_table: create_customer.customer_uuid,
       media_table: "customer",
     });
 
     if (!create_media) {
-      return res.status(404).json({
+      return res.status(500).json({
         success: false,
-        message: "Anda Gagal melakukan registrasi",
+        message: "Gagal menambahkan media untuk pelanggan.",
         data: null,
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Registrasi Berhasil",
+      message: "Registrasi berhasil.",
       data: {
         customer_uuid: create_customer.customer_uuid,
         customer_username: create_customer.customer_username,
-        customer_address: create_customer.customer_address,
         customer_email: create_customer.customer_email,
       },
     });
   } catch (error) {
-    console.log(error, "Data Error");
+    console.error(error);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: "Internal Server Error.",
       data: null,
     });
   }
